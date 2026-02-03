@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ScanForge3D</string>
+    <string name="scan_start">Scan starten</string>
+    <string name="scan_stop">Scan beenden</string>
+    <string name="export">Export</string>
+    <string name="projects">Projekte</string>
+    <string name="calibrate">Kalibrieren</string>
+    <string name="depth_not_supported">Dieses Gerät unterstützt keine Tiefenmessung.</string>
+    <string name="arcore_not_installed">Bitte installiere Google Play Services for AR.</string>
+</resources>

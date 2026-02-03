@@ -1,0 +1,23 @@
+# Android
+*.iml
+.gradle/
+build/
+local.properties
+.idea/
+*.apk
+*.aab
+
+# Native
+native/third_party/
+*.o
+*.so
+
+# Cloud
+__pycache__/
+*.pyc
+.env
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
