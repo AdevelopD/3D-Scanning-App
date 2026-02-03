@@ -1,9 +1,9 @@
 #pragma once
 #include "point_cloud.h"
+#include "../util/kdtree.h"
 #include <vector>
 #include <cmath>
 #include <algorithm>
-#include <numeric>
 
 namespace scanforge {
 
@@ -18,28 +18,26 @@ public:
         size_t n = input.size();
         std::vector<float> mean_distances(n);
 
+        // Build KD-tree for O(n log n) k-NN queries
+        KDTree tree;
+        tree.build(input);
+
         // Compute mean distance to k nearest neighbors for each point
-        // Using brute-force O(n^2) for simplicity; production should use KD-tree
         for (size_t i = 0; i < n; i++) {
-            std::vector<float> distances;
-            distances.reserve(n - 1);
-
-            for (size_t j = 0; j < n; j++) {
-                if (i == j) continue;
-                float d = input.getPoint(i).distanceTo(input.getPoint(j));
-                distances.push_back(d);
-            }
-
-            // Partial sort to get k smallest distances
-            std::partial_sort(distances.begin(),
-                distances.begin() + k_neighbors_,
-                distances.end());
+            const Vec3f& p = input.getPoint(i);
+            // findKNearest returns k points including the query point itself
+            // so we request k+1 and skip the first (distance 0)
+            std::vector<int> neighbors = tree.findKNearest(p, k_neighbors_ + 1);
 
             float sum = 0;
-            for (int k = 0; k < k_neighbors_; k++) {
-                sum += distances[k];
+            int count = 0;
+            for (int ni : neighbors) {
+                if (ni == static_cast<int>(i)) continue;
+                sum += p.distanceTo(input.getPoint(ni));
+                count++;
+                if (count >= k_neighbors_) break;
             }
-            mean_distances[i] = sum / k_neighbors_;
+            mean_distances[i] = (count > 0) ? sum / count : 0;
         }
 
         // Compute global mean and standard deviation
