@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.ViewInAr
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -19,6 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 fun HomeScreen(
     onStartScan: () -> Unit,
+    onStartPhotoCapture: () -> Unit,
     onOpenProjects: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -38,23 +41,54 @@ fun HomeScreen(
         )
 
         Text(
-            text = "3D-Scanner für Reverse Engineering",
+            text = "3D-Scanner fuer Reverse Engineering",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Main action buttons
+        // Depth scan button - only visible when supported
+        if (state.isDepthSupported) {
+            Button(
+                onClick = onStartScan,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+            ) {
+                Icon(Icons.Default.ViewInAr, contentDescription = null)
+                Spacer(modifier = Modifier.width(12.dp))
+                Text("3D-Scan (Tiefenkamera)", style = MaterialTheme.typography.titleMedium)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        // Photo mode button - always visible
         Button(
-            onClick = onStartScan,
+            onClick = onStartPhotoCapture,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp)
+                .height(64.dp),
+            colors = if (state.isDepthSupported) {
+                ButtonDefaults.outlinedButtonColors()
+            } else {
+                ButtonDefaults.buttonColors()
+            }
         ) {
-            Icon(Icons.Default.CameraAlt, contentDescription = null)
+            Icon(Icons.Default.PhotoCamera, contentDescription = null)
             Spacer(modifier = Modifier.width(12.dp))
-            Text("Neuer Scan", style = MaterialTheme.typography.titleMedium)
+            Text("Foto-Modus", style = MaterialTheme.typography.titleMedium)
+        }
+
+        if (!state.isDepthSupported) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Dein Geraet unterstuetzt keinen Tiefensensor. " +
+                        "Verwende den Foto-Modus fuer Cloud-basierte 3D-Rekonstruktion.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
 
         Spacer(modifier = Modifier.height(12.dp))

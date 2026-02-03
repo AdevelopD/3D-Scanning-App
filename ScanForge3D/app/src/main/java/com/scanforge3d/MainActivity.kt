@@ -16,6 +16,7 @@ import com.scanforge3d.ui.scan.ScanScreen
 import com.scanforge3d.ui.preview.PreviewScreen
 import com.scanforge3d.ui.calibration.CalibrationScreen
 import com.scanforge3d.ui.export.ExportScreen
+import com.scanforge3d.ui.photocapture.PhotoCaptureScreen
 import com.scanforge3d.ui.projects.ProjectsScreen
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -40,6 +41,7 @@ class MainActivity : ComponentActivity() {
                         composable("home") {
                             HomeScreen(
                                 onStartScan = { navController.navigate("scan") },
+                                onStartPhotoCapture = { navController.navigate("photo_capture") },
                                 onOpenProjects = { navController.navigate("projects") }
                             )
                         }
@@ -48,6 +50,17 @@ class MainActivity : ComponentActivity() {
                             ScanScreen(
                                 onScanComplete = { scanId ->
                                     navController.navigate("calibration/$scanId")
+                                },
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
+
+                        composable("photo_capture") {
+                            PhotoCaptureScreen(
+                                onComplete = { scanId ->
+                                    navController.navigate("preview/$scanId") {
+                                        popUpTo("home")
+                                    }
                                 },
                                 onBack = { navController.popBackStack() }
                             )
