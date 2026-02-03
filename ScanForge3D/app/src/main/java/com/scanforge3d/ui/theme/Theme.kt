@@ -16,6 +16,7 @@ private val LightColorScheme = lightColorScheme(
 fun ScanForge3DTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = LightColorScheme,
+        typography = ScanForgeTypography,
         content = content
     )
 }
