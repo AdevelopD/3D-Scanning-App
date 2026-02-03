@@ -7,14 +7,22 @@ import javax.inject.Inject
 class MeshProcessingPipeline @Inject constructor(
     private val native: NativeMeshProcessor
 ) {
+    enum class ReconstructionMethod {
+        POISSON,         // SDF via depth-controlled voxel grid
+        MARCHING_CUBES   // Direct voxel size control
+    }
+
     data class PipelineConfig(
         val voxelSize: Float = 0.002f,
         val sorKNeighbors: Int = 20,
         val sorStdRatio: Float = 2.0f,
         val normalKNeighbors: Int = 15,
+        val reconstructionMethod: ReconstructionMethod = ReconstructionMethod.POISSON,
         val poissonDepth: Int = 9,
+        val marchingCubesVoxelSize: Float = 0.003f,
         val decimationRatio: Float = 0.5f,
         val smoothingIterations: Int = 3,
+        val smoothingLambda: Float = 0.5f,
         val scaleFactor: Float = 1.0f
     )
 
@@ -37,25 +45,37 @@ class MeshProcessingPipeline @Inject constructor(
     ): PipelineResult = withContext(Dispatchers.Default) {
         val startTime = System.currentTimeMillis()
 
-        callback?.onProgress("Downsampling...", 0.1f)
+        callback?.onProgress("Downsampling...", 0.05f)
         val downsampled = native.voxelGridFilter(pointsFlat, config.voxelSize)
 
-        callback?.onProgress("Rauschen entfernen...", 0.2f)
+        callback?.onProgress("Rauschen entfernen...", 0.15f)
         val cleaned = native.statisticalOutlierRemoval(
             downsampled, config.sorKNeighbors, config.sorStdRatio
         )
 
-        callback?.onProgress("Normalen berechnen...", 0.3f)
+        callback?.onProgress("Normalen berechnen...", 0.25f)
         val pointsWithNormals = native.estimateNormals(cleaned, config.normalKNeighbors)
 
-        callback?.onProgress("Oberfläche rekonstruieren...", 0.5f)
-        val rawMesh = native.poissonReconstruction(pointsWithNormals, config.poissonDepth)
+        callback?.onProgress("Oberfläche rekonstruieren...", 0.45f)
+        val rawMesh = when (config.reconstructionMethod) {
+            ReconstructionMethod.POISSON ->
+                native.poissonReconstruction(pointsWithNormals, config.poissonDepth)
+            ReconstructionMethod.MARCHING_CUBES ->
+                native.marchingCubesReconstruction(pointsWithNormals, config.marchingCubesVoxelSize)
+        }
 
-        callback?.onProgress("Mesh reparieren...", 0.7f)
+        callback?.onProgress("Mesh reparieren...", 0.60f)
         val repairedMesh = native.repairMesh(rawMesh)
 
+        callback?.onProgress("Glätten...", 0.72f)
+        val smoothedMesh = if (config.smoothingIterations > 0) {
+            native.smoothMesh(repairedMesh, config.smoothingIterations, config.smoothingLambda)
+        } else {
+            repairedMesh
+        }
+
         callback?.onProgress("Optimieren...", 0.85f)
-        val decimatedMesh = native.decimateMesh(repairedMesh, config.decimationRatio)
+        val decimatedMesh = native.decimateMesh(smoothedMesh, config.decimationRatio)
 
         val finalMesh = if (config.scaleFactor != 1.0f) {
             applyScale(decimatedMesh, config.scaleFactor)

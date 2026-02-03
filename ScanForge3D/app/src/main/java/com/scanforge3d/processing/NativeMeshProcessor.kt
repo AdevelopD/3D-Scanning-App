@@ -29,10 +29,14 @@ class NativeMeshProcessor @Inject constructor() {
     external fun poissonReconstruction(
         pointsWithNormals: FloatArray, depth: Int
     ): FloatArray
+    external fun marchingCubesReconstruction(
+        pointsWithNormals: FloatArray, voxelSize: Float
+    ): FloatArray
 
     // Mesh post-processing
     external fun decimateMesh(meshData: FloatArray, targetRatio: Float): FloatArray
     external fun repairMesh(meshData: FloatArray): FloatArray
+    external fun smoothMesh(meshData: FloatArray, iterations: Int, lambda: Float): FloatArray
 
     // Export
     external fun exportSTL(meshData: FloatArray, filePath: String): Boolean

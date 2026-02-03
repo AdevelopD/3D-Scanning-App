@@ -29,6 +29,15 @@ JNIEXPORT jfloatArray JNICALL
 Java_com_scanforge3d_processing_NativeMeshProcessor_poissonReconstruction(
     JNIEnv *env, jobject thiz, jfloatArray points_with_normals, jint depth);
 
+JNIEXPORT jfloatArray JNICALL
+Java_com_scanforge3d_processing_NativeMeshProcessor_marchingCubesReconstruction(
+    JNIEnv *env, jobject thiz, jfloatArray points_with_normals, jfloat voxel_size);
+
+// Mesh smoothing
+JNIEXPORT jfloatArray JNICALL
+Java_com_scanforge3d_processing_NativeMeshProcessor_smoothMesh(
+    JNIEnv *env, jobject thiz, jfloatArray mesh_data, jint iterations, jfloat lambda);
+
 // Mesh post-processing
 JNIEXPORT jfloatArray JNICALL
 Java_com_scanforge3d_processing_NativeMeshProcessor_decimateMesh(

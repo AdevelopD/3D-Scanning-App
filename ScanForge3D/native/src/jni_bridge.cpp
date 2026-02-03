@@ -5,6 +5,7 @@
 #include "point_cloud/voxel_grid_filter.h"
 #include "point_cloud/statistical_outlier_removal.h"
 #include "mesh/poisson_reconstruction.h"
+#include "mesh/marching_cubes.h"
 #include "mesh/mesh_decimation.h"
 #include "mesh/mesh_repair.h"
 #include "mesh/mesh_smoothing.h"
@@ -242,6 +243,71 @@ Java_com_scanforge3d_processing_NativeMeshProcessor_poissonReconstruction(
 
     LOGI("Poisson result: %zu vertices, %zu triangles",
          mesh.vertexCount(), mesh.triangleCount());
+
+    return serializeMesh(env, mesh);
+}
+
+/**
+ * Marching Cubes Surface Reconstruction
+ *
+ * Alternative to Poisson with direct voxel size control.
+ * Computes SDF from oriented point cloud and extracts zero-isosurface.
+ *
+ * @param points_with_normals [x,y,z,nx,ny,nz, ...] per point
+ * @param voxel_size Grid cell size in meters
+ * @return Serialized mesh
+ */
+JNIEXPORT jfloatArray JNICALL
+Java_com_scanforge3d_processing_NativeMeshProcessor_marchingCubesReconstruction(
+    JNIEnv *env, jobject thiz,
+    jfloatArray points_with_normals, jfloat voxel_size) {
+
+    jfloat *data = env->GetFloatArrayElements(points_with_normals, nullptr);
+    jsize len = env->GetArrayLength(points_with_normals);
+    int num_points = len / 6;
+
+    LOGI("Marching Cubes: %d points, voxel_size=%.4f", num_points, voxel_size);
+
+    PointCloud cloud;
+    std::vector<Vec3f> normals;
+    cloud.reserve(num_points);
+    normals.reserve(num_points);
+
+    for (int i = 0; i < num_points; i++) {
+        cloud.addPoint({data[i*6], data[i*6+1], data[i*6+2]});
+        normals.push_back({data[i*6+3], data[i*6+4], data[i*6+5]});
+    }
+    env->ReleaseFloatArrayElements(points_with_normals, data, 0);
+
+    MarchingCubes mc(voxel_size);
+    TriangleMesh mesh = mc.reconstruct(cloud, normals);
+
+    LOGI("Marching Cubes result: %zu vertices, %zu triangles",
+         mesh.vertexCount(), mesh.triangleCount());
+
+    return serializeMesh(env, mesh);
+}
+
+/**
+ * Mesh Smoothing: Laplacian or Taubin smoothing
+ *
+ * @param iterations Number of smoothing passes
+ * @param lambda Smoothing factor (0.0-1.0, typical: 0.5)
+ */
+JNIEXPORT jfloatArray JNICALL
+Java_com_scanforge3d_processing_NativeMeshProcessor_smoothMesh(
+    JNIEnv *env, jobject thiz,
+    jfloatArray mesh_data, jint iterations, jfloat lambda) {
+
+    jfloat *data = env->GetFloatArrayElements(mesh_data, nullptr);
+    TriangleMesh mesh = deserializeMesh(data);
+    env->ReleaseFloatArrayElements(mesh_data, data, 0);
+
+    MeshSmoothing smoother;
+    smoother.taubinSmooth(mesh, iterations, lambda);
+
+    LOGI("Smoothing: %d iterations, lambda=%.2f -> %zu vertices",
+         iterations, lambda, mesh.vertexCount());
 
     return serializeMesh(env, mesh);
 }
