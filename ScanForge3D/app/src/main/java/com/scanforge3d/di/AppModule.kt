@@ -3,6 +3,7 @@ package com.scanforge3d.di
 import android.content.Context
 import androidx.room.Room
 import com.scanforge3d.data.local.ProjectDao
+import com.scanforge3d.data.local.ScanDao
 import com.scanforge3d.data.local.ScanDatabase
 import com.scanforge3d.data.remote.CloudApiService
 import dagger.Module
@@ -29,10 +30,14 @@ object AppModule {
         context,
         ScanDatabase::class.java,
         "scanforge_db"
-    ).build()
+    ).fallbackToDestructiveMigration()
+    .build()
 
     @Provides
     fun provideProjectDao(db: ScanDatabase): ProjectDao = db.projectDao()
+
+    @Provides
+    fun provideScanDao(db: ScanDatabase): ScanDao = db.scanDao()
 
     @Provides
     @Singleton
