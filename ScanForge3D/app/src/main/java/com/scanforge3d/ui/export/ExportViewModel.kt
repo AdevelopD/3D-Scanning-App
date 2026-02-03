@@ -1,5 +1,8 @@
 package com.scanforge3d.ui.export
 
+import android.content.Context
+import android.content.Intent
+import androidx.core.content.FileProvider
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,7 +14,10 @@ import com.scanforge3d.export.OBJExporter
 import com.scanforge3d.export.PLYExporter
 import com.scanforge3d.processing.NativeMeshProcessor
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.File
@@ -20,6 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ExportViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    @ApplicationContext private val appContext: Context,
     private val scanRepository: ScanRepository,
     private val stlExporter: STLExporter,
     private val objExporter: OBJExporter,
@@ -48,6 +55,9 @@ class ExportViewModel @Inject constructor(
     private val scanId: String = savedStateHandle["scanId"] ?: ""
     private val _exportState = MutableStateFlow(ExportState())
     val exportState: StateFlow<ExportState> = _exportState
+
+    private val _shareIntent = MutableSharedFlow<Intent>()
+    val shareIntent: SharedFlow<Intent> = _shareIntent
 
     private var meshData: FloatArray? = null
 
@@ -136,7 +146,73 @@ class ExportViewModel @Inject constructor(
     }
 
     fun downloadCATIAMacro() {
-        // Opens browser or share dialog with CATIA macro info
+        viewModelScope.launch {
+            val macroFile = File(appContext.cacheDir, "ScanForge_Import.CATScript")
+            macroFile.writeText(CATIA_MACRO_SCRIPT)
+
+            val uri = FileProvider.getUriForFile(
+                appContext,
+                "${appContext.packageName}.fileprovider",
+                macroFile
+            )
+
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_SUBJECT, "ScanForge3D CATIA Import-Macro")
+                putExtra(
+                    Intent.EXTRA_TEXT,
+                    "CATIA Import-Macro für ScanForge3D.\n" +
+                    "In CATIA: Tools → Macro → Macros → Erstellen → Code einfügen → Ausführen"
+                )
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+
+            _shareIntent.emit(Intent.createChooser(shareIntent, "Macro teilen"))
+        }
+    }
+
+    companion object {
+        private val CATIA_MACRO_SCRIPT = """
+            |' ScanForge_Import.CATScript
+            |' Automatische STEP → CATPart Konvertierung
+            |'
+            |' Installation:
+            |' 1. In CATIA: Tools → Macro → Macros...
+            |' 2. "Erstellen" → Name: "ScanForge_Import"
+            |' 3. Diesen Code einfügen
+            |' 4. Ausführen mit Pfad zur STEP-Datei
+            |
+            |Sub CATMain()
+            |
+            |    Dim sStepFile As String
+            |    Dim sOutputDir As String
+            |
+            |    ' Dateiauswahl-Dialog
+            |    sStepFile = CATIA.FileSelectionBox( _
+            |        "STEP-Datei auswählen", "*.stp;*.step", CatFileSelectionModeOpen)
+            |
+            |    If sStepFile = "" Then Exit Sub
+            |
+            |    ' STEP importieren
+            |    Dim oDoc As Document
+            |    Set oDoc = CATIA.Documents.Open(sStepFile)
+            |
+            |    ' Als CATPart speichern
+            |    sOutputDir = Left(sStepFile, InStrRev(sStepFile, "\"))
+            |    Dim sFileName As String
+            |    sFileName = Mid(sStepFile, InStrRev(sStepFile, "\") + 1)
+            |    sFileName = Left(sFileName, InStrRev(sFileName, ".") - 1)
+            |
+            |    Dim sOutputPath As String
+            |    sOutputPath = sOutputDir & sFileName & ".CATPart"
+            |
+            |    oDoc.SaveAs sOutputPath
+            |    MsgBox "Gespeichert als: " & sOutputPath, vbInformation, "ScanForge3D"
+            |
+            |End Sub
+        """.trimMargin()
     }
 
     private fun formatFileSize(bytes: Long): String {

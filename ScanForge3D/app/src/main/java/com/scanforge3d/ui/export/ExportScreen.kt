@@ -1,5 +1,6 @@
 package com.scanforge3d.ui.export
 
+import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -10,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -20,6 +22,14 @@ fun ExportScreen(
     viewModel: ExportViewModel = hiltViewModel()
 ) {
     val exportState by viewModel.exportState.collectAsState()
+    val context = LocalContext.current
+
+    // Collect share intent events from ViewModel
+    LaunchedEffect(Unit) {
+        viewModel.shareIntent.collect { intent ->
+            context.startActivity(intent)
+        }
+    }
 
     Column(
         modifier = Modifier
