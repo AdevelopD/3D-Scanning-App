@@ -24,6 +24,7 @@ class PreviewViewModel @Inject constructor(
         val processingStep: String = "",
         val processingProgress: Float = 0f,
         val mesh: TriangleMesh? = null,
+        val meshData: FloatArray? = null,
         val error: String? = null
     )
 
@@ -62,7 +63,8 @@ class PreviewViewModel @Inject constructor(
 
                 _state.value = PreviewState(
                     isLoading = false,
-                    mesh = TriangleMesh.fromSerializedData(result.meshData)
+                    mesh = TriangleMesh.fromSerializedData(result.meshData),
+                    meshData = result.meshData
                 )
             } catch (e: Exception) {
                 _state.value = PreviewState(
