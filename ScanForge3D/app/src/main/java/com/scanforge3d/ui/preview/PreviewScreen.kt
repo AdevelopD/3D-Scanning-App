@@ -62,7 +62,7 @@ fun PreviewScreen(
                     if (state.processingProgress > 0f) {
                         Spacer(modifier = Modifier.height(8.dp))
                         LinearProgressIndicator(
-                            progress = { state.processingProgress },
+                            progress = state.processingProgress,
                             modifier = Modifier.width(200.dp)
                         )
                     }

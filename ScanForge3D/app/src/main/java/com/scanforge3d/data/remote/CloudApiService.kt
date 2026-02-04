@@ -8,7 +8,7 @@ import retrofit2.http.*
 interface CloudApiService {
 
     companion object {
-        const val BASE_URL = "https://api.scanforge3d.com/"
+        val BASE_URL: String = com.scanforge3d.BuildConfig.CLOUD_API_URL
     }
 
     @Multipart

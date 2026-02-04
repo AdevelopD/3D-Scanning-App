@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -16,14 +17,16 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Theme.ScanForge3D"
-        android:hardwareAccelerated="true">
+        android:hardwareAccelerated="true"
+        android:usesCleartextTraffic="true">
 
         <meta-data
             android:name="com.google.ar.core"
             android:value="optional" />
         <meta-data
             android:name="com.google.ar.core.min_apk_version"
-            android:value="191" />
+            android:value="191"
+            tools:replace="android:value" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

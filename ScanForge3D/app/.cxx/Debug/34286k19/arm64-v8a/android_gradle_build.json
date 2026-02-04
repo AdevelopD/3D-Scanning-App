@@ -1,0 +1,38 @@
+{
+  "buildFiles": [
+    "C:\\Claude_Code_projects\\3D-Scanning-App\\ScanForge3D\\native\\CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "C:\\Users\\seppl\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+      "-C",
+      "C:\\Claude_Code_projects\\3D-Scanning-App\\ScanForge3D\\app\\.cxx\\Debug\\34286k19\\arm64-v8a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "C:\\Users\\seppl\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+    "-C",
+    "C:\\Claude_Code_projects\\3D-Scanning-App\\ScanForge3D\\app\\.cxx\\Debug\\34286k19\\arm64-v8a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "scanforge_native::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "arm64-v8a",
+      "artifactName": "scanforge_native",
+      "output": "C:\\Claude_Code_projects\\3D-Scanning-App\\ScanForge3D\\app\\build\\intermediates\\cxx\\Debug\\34286k19\\obj\\arm64-v8a\\libscanforge_native.so",
+      "runtimeFiles": []
+    }
+  },
+  "toolchains": {
+    "toolchain": {
+      "cCompilerExecutable": "C:\\Users\\seppl\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang.exe",
+      "cppCompilerExecutable": "C:\\Users\\seppl\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang++.exe"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}

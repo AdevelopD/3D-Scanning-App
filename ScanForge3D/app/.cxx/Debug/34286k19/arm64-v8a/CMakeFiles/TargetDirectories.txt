@@ -1,0 +1,3 @@
+C:/Claude_Code_projects/3D-Scanning-App/ScanForge3D/app/.cxx/Debug/34286k19/arm64-v8a/CMakeFiles/scanforge_native.dir
+C:/Claude_Code_projects/3D-Scanning-App/ScanForge3D/app/.cxx/Debug/34286k19/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Claude_Code_projects/3D-Scanning-App/ScanForge3D/app/.cxx/Debug/34286k19/arm64-v8a/CMakeFiles/rebuild_cache.dir

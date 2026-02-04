@@ -16,6 +16,9 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
+        // Cloud backend URL - change to your server IP
+        buildConfigField("String", "CLOUD_API_URL", "\"http://192.168.178.91:8000/\"")
+
         ndk {
             abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a"))
         }
@@ -59,6 +62,7 @@ android {
     buildFeatures {
         compose = true
         viewBinding = true
+        buildConfig = true
     }
 
     composeOptions {

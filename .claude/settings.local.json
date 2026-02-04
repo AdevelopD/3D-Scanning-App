@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash:*)",
+      "Bash(dir \"C:\\\\Claude_Code_projects\\\\3D-Scanning-App\" /s /b)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial ScanForge3D project with complete native C++ algorithms\n\n- Project structure: Kotlin + C++ NDK + Python cloud backend\n- ARCore depth capture integration with ScanScreen\n- C++ native algorithms: ICP \\(SVD\\), Marching Cubes, QEM decimation,\n  mesh repair \\(manifold, hole fill, normal orient\\), PCA normal estimation\n- KDTree with optimized k-NN bounded search\n- Mesh smoothing \\(Laplacian/Taubin\\), export writers \\(STL/OBJ/PLY\\)\n- JNI bridge with 10 native functions\n- Kotlin UI: Home, Scan, Preview, Calibration, Export, Projects screens\n- Room database, Hilt DI, Retrofit cloud API\n- Processing pipeline: downsample -> SOR -> normals -> reconstruct -> repair -> decimate\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(ls -la \"C:\\\\Claude_Code_projects\\\\3D-Scanning-App\\\\ScanForge3D\\\\scripts\"\" 2>/dev/null || echo \"Scripts directory check failed \")",
+      "Bash(find:*)",
+      "Bash(where:*)",
+      "Bash(java:*)",
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:developers.google.com)",
+      "Bash(echo:*)",
+      "Bash(git clone:*)"
+    ]
+  }
+}

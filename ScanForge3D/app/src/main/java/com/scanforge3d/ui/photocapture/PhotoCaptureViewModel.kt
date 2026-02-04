@@ -50,6 +50,8 @@ class PhotoCaptureViewModel @Inject constructor(
         }
 
     fun onPhotoCaptured(file: File) {
+        // Verify file was actually written by CameraX before adding
+        if (!file.exists() || file.length() == 0L) return
         _state.update { current ->
             current.copy(
                 capturedPhotos = current.capturedPhotos + file,
@@ -87,7 +89,15 @@ class PhotoCaptureViewModel @Inject constructor(
                     )
                 }
 
-                val photos = _state.value.capturedPhotos
+                // Filter out any files that no longer exist
+                val photos = _state.value.capturedPhotos.filter { it.exists() && it.length() > 0 }
+                if (photos.isEmpty()) {
+                    _state.update {
+                        it.copy(isUploading = false, error = "Keine gültigen Fotos vorhanden")
+                    }
+                    return@launch
+                }
+
                 val parts = photos.mapIndexed { index, file ->
                     val requestBody = file.asRequestBody("image/jpeg".toMediaType())
                     _state.update {
@@ -124,6 +134,20 @@ class PhotoCaptureViewModel @Inject constructor(
                 }
 
                 pollStatus(jobId)
+            } catch (e: java.net.UnknownHostException) {
+                _state.update {
+                    it.copy(
+                        isUploading = false,
+                        error = "Cloud-Backend nicht erreichbar. Bitte starte das Backend (cloud-backend/) zuerst."
+                    )
+                }
+            } catch (e: java.net.ConnectException) {
+                _state.update {
+                    it.copy(
+                        isUploading = false,
+                        error = "Keine Verbindung zum Cloud-Backend. Läuft der Server?"
+                    )
+                }
             } catch (e: Exception) {
                 _state.update {
                     it.copy(

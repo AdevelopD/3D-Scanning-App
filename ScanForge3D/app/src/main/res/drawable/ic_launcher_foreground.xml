@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 3D cube icon -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,28L74,40L74,64L54,76L34,64L34,40Z" />
+    <path
+        android:fillColor="#E0E0E0"
+        android:pathData="M54,28L74,40L74,64L54,52Z" />
+    <path
+        android:fillColor="#BDBDBD"
+        android:pathData="M54,28L34,40L34,64L54,52Z" />
+    <path
+        android:fillColor="#90CAF9"
+        android:pathData="M34,64L54,76L74,64L54,52Z" />
+</vector>

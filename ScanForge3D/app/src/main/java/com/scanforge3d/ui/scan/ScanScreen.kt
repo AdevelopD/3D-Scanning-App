@@ -17,8 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import com.google.ar.core.Config
 import com.google.ar.core.Session
 import com.google.ar.core.TrackingState
@@ -97,21 +95,8 @@ fun ScanScreen(
                     }
                 )
 
-                // Lifecycle management for ARSceneView
-                DisposableEffect(lifecycleOwner) {
-                    val observer = LifecycleEventObserver { _, event ->
-                        when (event) {
-                            Lifecycle.Event.ON_RESUME -> arSceneView?.resume()
-                            Lifecycle.Event.ON_PAUSE -> arSceneView?.pause()
-                            Lifecycle.Event.ON_DESTROY -> arSceneView?.destroy()
-                            else -> {}
-                        }
-                    }
-                    lifecycleOwner.lifecycle.addObserver(observer)
-                    onDispose {
-                        lifecycleOwner.lifecycle.removeObserver(observer)
-                    }
-                }
+                // ARSceneView manages its own lifecycle through AndroidView's
+                // attach/detach mechanism. The onRelease callback above handles cleanup.
             } else {
                 // No camera permission
                 Box(

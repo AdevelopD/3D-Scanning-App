@@ -138,6 +138,7 @@ fun ExportScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ExportOption(
     title: String,
@@ -173,7 +174,7 @@ private fun ExportOption(
                 if (isLoading && progress > 0f) {
                     Spacer(modifier = Modifier.height(4.dp))
                     LinearProgressIndicator(
-                        progress = { progress },
+                        progress = progress,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }

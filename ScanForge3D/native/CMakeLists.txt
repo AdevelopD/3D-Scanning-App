@@ -24,16 +24,13 @@ file(GLOB_RECURSE NATIVE_SOURCES
     "src/*.h"
 )
 
-# Poisson Reconstruction sources (optional - only if third_party is present)
-file(GLOB POISSON_SOURCES
-    "third_party/PoissonRecon/Src/PoissonRecon.cpp"
-    "third_party/PoissonRecon/Src/SurfaceTrimmer.cpp"
-)
+# Note: PoissonRecon .cpp files (PoissonRecon.cpp, SurfaceTrimmer.cpp) are
+# standalone CLI executables, not library code. Our own poisson_reconstruction.cpp
+# uses MarchingCubes instead. We only need the PoissonRecon headers on the include path.
 
 # Create shared library
 add_library(scanforge_native SHARED
     ${NATIVE_SOURCES}
-    ${POISSON_SOURCES}
 )
 
 # Link Android libraries

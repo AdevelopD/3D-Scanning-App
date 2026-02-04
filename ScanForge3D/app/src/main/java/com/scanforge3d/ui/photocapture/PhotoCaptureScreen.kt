@@ -113,7 +113,7 @@ fun PhotoCaptureScreen(
                 cameraProviderFuture.addListener({
                     val cameraProvider = cameraProviderFuture.get()
                     val preview = Preview.Builder().build().also {
-                        it.surfaceProvider = previewView.surfaceProvider
+                        it.setSurfaceProvider(previewView.surfaceProvider)
                     }
                     try {
                         cameraProvider.unbindAll()
@@ -292,12 +292,12 @@ fun PhotoCaptureScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         if (state.reconstructionProgress > 0f) {
                             LinearProgressIndicator(
-                                progress = { state.reconstructionProgress },
+                                progress = state.reconstructionProgress,
                                 modifier = Modifier.fillMaxWidth()
                             )
                         } else {
                             LinearProgressIndicator(
-                                progress = { state.uploadProgress },
+                                progress = state.uploadProgress,
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }

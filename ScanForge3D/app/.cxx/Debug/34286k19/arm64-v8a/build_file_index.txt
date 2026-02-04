@@ -1,0 +1,1 @@
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\CMakeLists.txt

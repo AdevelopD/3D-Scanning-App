@@ -1,0 +1,17 @@
+# ninja log v5
+12	9775	7918914117624317	CMakeFiles/scanforge_native.dir/src/export/obj_writer.cpp.o	d36330fbdbe9d104
+811	11420	7918914156712968	CMakeFiles/scanforge_native.dir/src/export/stl_writer.cpp.o	e1fdbe3885a6d83
+1221	12745	7918914157807710	CMakeFiles/scanforge_native.dir/src/export/ply_writer.cpp.o	42a98157eec806d8
+4126	21353	7918914215802970	CMakeFiles/scanforge_native.dir/src/mesh/mesh_decimation.cpp.o	a8a80a5451fdabb8
+2458	14548	7918914179128602	CMakeFiles/scanforge_native.dir/src/mesh/marching_cubes.cpp.o	9609819fae65f662
+7377	16347	7918914196569334	CMakeFiles/scanforge_native.dir/src/mesh/poisson_reconstruction.cpp.o	cc67301cf3d6d68f
+283	17763	7918914199408752	CMakeFiles/scanforge_native.dir/src/jni_bridge.cpp.o	fe398054d91ed9e9
+4928	21305	7918914207717003	CMakeFiles/scanforge_native.dir/src/mesh/mesh_smoothing.cpp.o	7d8f0b3e3bf154a0
+3490	19646	7918914209668586	CMakeFiles/scanforge_native.dir/src/mesh/mesh_repair.cpp.o	cf14b73097000827
+8060	21414	7918914243143855	CMakeFiles/scanforge_native.dir/src/point_cloud/point_cloud.cpp.o	2c2238c384516136
+9788	21821	7918914258488668	CMakeFiles/scanforge_native.dir/src/point_cloud/normal_estimation.cpp.o	e2f9646064c5ccf3
+11422	23077	7918914274715426	CMakeFiles/scanforge_native.dir/src/point_cloud/icp_registration.cpp.o	5490c2575a35b200
+12747	23965	7918914280861931	CMakeFiles/scanforge_native.dir/src/point_cloud/voxel_grid_filter.cpp.o	73ae8fe210fcc56e
+16349	25058	7918914293873045	CMakeFiles/scanforge_native.dir/src/point_cloud/statistical_outlier_removal.cpp.o	d3c9af0a45e88a4c
+14551	26297	7918914306575654	CMakeFiles/scanforge_native.dir/src/util/kdtree.cpp.o	dcaa104b8d062c58
+19	2353	7918936113573824	C:/Claude_Code_projects/3D-Scanning-App/ScanForge3D/app/build/intermediates/cxx/Debug/34286k19/obj/armeabi-v7a/libscanforge_native.so	83a9e9a06427b70a

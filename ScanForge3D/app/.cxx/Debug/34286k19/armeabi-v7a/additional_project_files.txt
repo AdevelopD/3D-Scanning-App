@@ -1,0 +1,17 @@
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\export\obj_writer.h
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\export\ply_writer.h
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\export\stl_writer.h
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\jni_bridge.h
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\mesh\marching_cubes.h
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\mesh\mesh_decimation.h
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\mesh\mesh_repair.h
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\mesh\mesh_smoothing.h
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\mesh\poisson_reconstruction.h
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\point_cloud\icp_registration.h
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\point_cloud\normal_estimation.h
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\point_cloud\point_cloud.h
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\point_cloud\statistical_outlier_removal.h
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\point_cloud\voxel_grid_filter.h
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\util\kdtree.h
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\util\math_utils.h
+C:\Claude_Code_projects\3D-Scanning-App\ScanForge3D\native\src\util\timer.h
