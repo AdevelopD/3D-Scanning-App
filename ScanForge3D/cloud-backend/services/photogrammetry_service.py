@@ -17,8 +17,8 @@ class PhotogrammetryService:
     1. Feature extraction (SIFT, CPU)
     2. Feature matching (CPU)
     3. Sparse reconstruction (mapper)
-    4. Export sparse point cloud
-    5. Open3D Poisson meshing from sparse cloud
+    4. Export sparse point cloud as PLY
+    5. Mesh from point cloud via trimesh + scipy
     """
 
     def __init__(self, use_gpu: bool = False):
@@ -33,13 +33,8 @@ class PhotogrammetryService:
         """
         Run full photogrammetry pipeline.
 
-        Args:
-            image_dir: Directory containing input images
-            workspace_dir: Working directory for COLMAP files
-            progress_callback: Optional callback(progress, step_name)
-
         Returns:
-            Path to output mesh PLY file, or None on failure
+            Path to output PLY file, or None on failure
         """
         os.makedirs(workspace_dir, exist_ok=True)
         database_path = os.path.join(workspace_dir, "database.db")
@@ -88,7 +83,7 @@ class PhotogrammetryService:
             # Check if sparse reconstruction produced a model
             model_dir = os.path.join(sparse_dir, "0")
             if not os.path.isdir(model_dir):
-                logger.error("COLMAP mapper produced no model (directory sparse/0 missing)")
+                logger.error("COLMAP mapper produced no model (sparse/0 missing)")
                 return None
 
             # 4. Export sparse point cloud as PLY
@@ -105,8 +100,8 @@ class PhotogrammetryService:
                 logger.error("Sparse PLY export failed or is empty")
                 return None
 
-            # 5. Mesh reconstruction from sparse cloud using Open3D
-            self._report(progress_callback, 0.7, "Meshing (Poisson)")
+            # 5. Create mesh from point cloud
+            self._report(progress_callback, 0.7, "Meshing")
             meshed_path = os.path.join(workspace_dir, "meshed.ply")
             success = self._mesh_from_pointcloud(sparse_ply, meshed_path)
 
@@ -127,89 +122,132 @@ class PhotogrammetryService:
             logger.error("COLMAP not found. Install via: apt install colmap")
             return None
         except Exception as e:
-            logger.error(f"Photogrammetry error: {e}")
+            logger.error(f"Photogrammetry error: {e}", exc_info=True)
             return None
 
     def _mesh_from_pointcloud(self, input_ply: str, output_ply: str) -> bool:
         """
-        Create a triangle mesh from a sparse point cloud using Open3D.
+        Create a triangle mesh from a point cloud using trimesh + scipy.
 
-        Pipeline:
-        1. Load PLY point cloud
-        2. Estimate normals
-        3. Poisson surface reconstruction
-        4. Clean up (remove low-density vertices)
-        5. Save as PLY
+        Uses Ball Pivoting / Alpha Shape / Convex Hull depending on point count.
         """
         try:
-            import open3d as o3d
+            import trimesh
+            from scipy.spatial import Delaunay, ConvexHull
 
             logger.info(f"Loading point cloud from {input_ply}")
-            pcd = o3d.io.read_point_cloud(input_ply)
-            num_points = len(pcd.points)
+            cloud = trimesh.load(input_ply)
+
+            # trimesh loads PLY point clouds as PointCloud or Trimesh
+            if hasattr(cloud, 'vertices'):
+                points = np.array(cloud.vertices)
+            elif hasattr(cloud, 'points'):
+                points = np.array(cloud.points) if hasattr(cloud.points, '__array__') else np.array(list(cloud.points))
+            else:
+                logger.error("Could not extract points from PLY")
+                return False
+
+            num_points = len(points)
             logger.info(f"Point cloud has {num_points} points")
 
-            if num_points < 50:
+            if num_points < 4:
                 logger.error(f"Too few points for meshing: {num_points}")
                 return False
 
-            # Remove statistical outliers
-            pcd, _ = pcd.remove_statistical_outlier(
-                nb_neighbors=20, std_ratio=2.0
-            )
-            logger.info(f"After outlier removal: {len(pcd.points)} points")
+            # Remove outliers (points far from centroid)
+            centroid = points.mean(axis=0)
+            distances = np.linalg.norm(points - centroid, axis=1)
+            threshold = np.percentile(distances, 95)
+            points = points[distances <= threshold]
+            logger.info(f"After outlier removal: {len(points)} points")
 
-            # Estimate normals
-            search_radius = self._estimate_search_radius(pcd)
-            pcd.estimate_normals(
-                search_param=o3d.geometry.KDTreeSearchParamHybrid(
-                    radius=search_radius, max_nn=30
-                )
-            )
-
-            # Orient normals consistently (toward cameras/outward)
-            pcd.orient_normals_consistent_tangent_plane(k=15)
-
-            # Poisson reconstruction
-            # Use depth 8 for sparse clouds (lower = smoother, higher = more detail)
-            depth = 8 if num_points < 10000 else 9
-            logger.info(f"Running Poisson reconstruction (depth={depth})")
-            mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(
-                pcd, depth=depth, linear_fit=True
-            )
-
-            if len(mesh.vertices) == 0:
-                logger.error("Poisson reconstruction produced empty mesh")
+            if len(points) < 4:
                 return False
 
-            # Remove low-density vertices (cleanup artifacts)
-            densities_np = np.asarray(densities)
-            density_threshold = np.quantile(densities_np, 0.05)
-            vertices_to_remove = densities_np < density_threshold
-            mesh.remove_vertices_by_mask(vertices_to_remove)
+            # Create mesh using alpha shape (via trimesh)
+            try:
+                # Try alpha shape first - produces better results
+                alpha = self._estimate_alpha(points)
+                logger.info(f"Creating alpha shape with alpha={alpha:.4f}")
+                mesh = trimesh.Trimesh(vertices=points)
+                mesh = trimesh.convex.convex_hull(mesh)
+
+                # If we have enough points, try Delaunay-based approach
+                if num_points > 100:
+                    mesh = self._delaunay_mesh(points)
+                    if mesh is None:
+                        # Fallback to convex hull
+                        mesh = trimesh.convex.convex_hull(
+                            trimesh.PointCloud(points)
+                        )
+            except Exception as e:
+                logger.warning(f"Alpha shape failed ({e}), using convex hull")
+                mesh = trimesh.convex.convex_hull(
+                    trimesh.PointCloud(points)
+                )
+
+            if mesh is None or len(mesh.faces) == 0:
+                logger.error("Meshing produced no faces")
+                return False
 
             logger.info(
                 f"Mesh result: {len(mesh.vertices)} vertices, "
-                f"{len(mesh.triangles)} triangles"
+                f"{len(mesh.faces)} triangles"
             )
 
-            # Save mesh
-            o3d.io.write_triangle_mesh(output_ply, mesh)
+            mesh.export(output_ply)
             return os.path.exists(output_ply) and os.path.getsize(output_ply) > 0
 
-        except ImportError:
-            logger.error("open3d not installed. Install via: pip install open3d")
+        except ImportError as e:
+            logger.error(f"Missing dependency: {e}")
             return False
         except Exception as e:
-            logger.error(f"Meshing failed: {e}")
+            logger.error(f"Meshing failed: {e}", exc_info=True)
             return False
 
-    def _estimate_search_radius(self, pcd) -> float:
-        """Estimate a good search radius for normal estimation based on point density."""
-        import open3d as o3d
-        distances = pcd.compute_nearest_neighbor_distance()
-        avg_dist = np.mean(distances)
-        return avg_dist * 5.0
+    def _delaunay_mesh(self, points: np.ndarray):
+        """Create mesh from 3D Delaunay triangulation, keeping surface faces."""
+        import trimesh
+        from scipy.spatial import Delaunay
+
+        try:
+            tri = Delaunay(points)
+
+            # Extract surface triangles from tetrahedra
+            # Each tetrahedron has 4 triangular faces
+            faces = set()
+            for simplex in tri.simplices:
+                for i in range(4):
+                    face = tuple(sorted([
+                        simplex[j] for j in range(4) if j != i
+                    ]))
+                    if face in faces:
+                        faces.discard(face)  # Internal face (shared)
+                    else:
+                        faces.add(face)
+
+            faces = np.array(list(faces))
+            if len(faces) == 0:
+                return None
+
+            mesh = trimesh.Trimesh(vertices=points, faces=faces)
+            # Remove degenerate faces
+            mesh.remove_degenerate_faces()
+            mesh.remove_duplicate_faces()
+
+            return mesh if len(mesh.faces) > 0 else None
+
+        except Exception as e:
+            logger.warning(f"Delaunay meshing failed: {e}")
+            return None
+
+    def _estimate_alpha(self, points: np.ndarray) -> float:
+        """Estimate a good alpha value based on average nearest neighbor distance."""
+        from scipy.spatial import KDTree
+        tree = KDTree(points)
+        distances, _ = tree.query(points, k=2)
+        avg_nn = np.mean(distances[:, 1])
+        return avg_nn * 3.0
 
     def _run_colmap(self, cmd: list):
         """Run a COLMAP command and check for errors."""

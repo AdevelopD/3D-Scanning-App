@@ -45,7 +45,7 @@ class PhotoCaptureViewModel @Inject constructor(
 
     private val photoDir: File
         get() {
-            val dir = File(context.cacheDir, "photos_${_state.value.sessionId}")
+            val dir = File(context.filesDir, "photos_${_state.value.sessionId}")
             if (!dir.exists()) dir.mkdirs()
             return dir
         }
