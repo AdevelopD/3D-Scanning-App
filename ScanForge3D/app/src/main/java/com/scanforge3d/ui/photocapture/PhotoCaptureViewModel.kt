@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
@@ -89,23 +90,32 @@ class PhotoCaptureViewModel @Inject constructor(
                     )
                 }
 
-                // Filter out any files that no longer exist
-                val photos = _state.value.capturedPhotos.filter { it.exists() && it.length() > 0 }
-                if (photos.isEmpty()) {
+                // Read all photo bytes into memory first to avoid ENOENT
+                // (Android can clean cache files between check and upload)
+                val photoBytes = mutableListOf<Pair<String, ByteArray>>()
+                for (file in _state.value.capturedPhotos) {
+                    if (file.exists() && file.length() > 0) {
+                        try {
+                            photoBytes.add(file.name to file.readBytes())
+                        } catch (_: Exception) {
+                            // Skip files that can't be read
+                        }
+                    }
+                }
+
+                if (photoBytes.isEmpty()) {
                     _state.update {
                         it.copy(isUploading = false, error = "Keine gültigen Fotos vorhanden")
                     }
                     return@launch
                 }
 
-                val parts = photos.mapIndexed { index, file ->
-                    val requestBody = file.asRequestBody("image/jpeg".toMediaType())
+                val parts = photoBytes.mapIndexed { index, (name, bytes) ->
+                    val requestBody = bytes.toRequestBody("image/jpeg".toMediaType())
                     _state.update {
-                        it.copy(uploadProgress = (index + 1).toFloat() / photos.size * 0.5f)
+                        it.copy(uploadProgress = (index + 1).toFloat() / photoBytes.size * 0.5f)
                     }
-                    MultipartBody.Part.createFormData(
-                        "files", file.name, requestBody
-                    )
+                    MultipartBody.Part.createFormData("files", name, requestBody)
                 }
 
                 _state.update {
